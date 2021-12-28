@@ -48,3 +48,4 @@ public:
     /*toString*/
     virtual string toString();
 };
+

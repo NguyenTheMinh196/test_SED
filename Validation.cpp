@@ -378,23 +378,23 @@ void Validation::readOneCustomerInCustomerFile(ifstream& filein, Customer* custo
     bool checkRental = checkInt(numOfRentals);
     getline(filein, customerType);
     string items = "";
-    // check the number of rental 
+    // check the number of rental
     bool checkId = true;
     if (checkRental) {
         int space_back = 0; // the size to move back
         int temp_space_back = 0;
         for (;;) {
             if (filein.tellg() == -1) break;
+            space_back = filein.tellg();
             getline(filein, items);
-            space_back = filein.tellg(); // the size to move back
-            if (validateLine(items)) {
-                filein.seekg(temp_space_back - space_back, ios_base::cur);
-                break;
-            }
-            else {
+            temp_space_back = filein.tellg(); // the size to move back
+            if (validateIdItem(items)) {
                 checkId = checkIdItem(items, listItem);
             }
-            temp_space_back = space_back;
+            else if (validateLine(items)) {
+                filein.seekg(-temp_space_back + space_back, ios_base::cur);
+                break;
+            }
         }
     }
     if (checkId && checkRental && checkCustomer(id, CUSs, name, address, phone, numOfRentals, customerType, listItem)) {
@@ -407,7 +407,15 @@ void Validation::readOneCustomerInCustomerFile(ifstream& filein, Customer* custo
 
     }
 }
-
+Item* Validation::searchItemID(vector<Item*> items, string ID) {
+    int size = items.size();
+    for (int i = 0; i < size; i++) {
+        if (items[i]->getID() == ID) {
+            return items[i];
+        }
+    }
+    return NULL;
+}
 /*Read file and classofy the Item then add to vector Item*/
 void Validation::readFileCustomer(ifstream& filein, vector<Customer*>& customers) {
     string temp; // initialize to check "#" before
@@ -442,11 +450,52 @@ void Validation::readFileCustomer(ifstream& filein, vector<Customer*>& customers
     }
     CUSs.clear();
 }
+void Validation::checkCustomerAndItems(vector<Item*>& items, vector<Customer*>& customers) {
+    // the format of itemsBorrow is item, numberofBorrow of item1, item 2, numberofBorrow of item2, ... so on
+    vector<string> itemsBorrow;
+    for (int i = 0; i < customers.size(); i++) {
+        if (customers[i]->getnumOfRentals() > 0) {
+            for (int j = 0; j < customers[i]->getnumOfRentals(); j++) {
+                Item* itemBorrow = searchItemID(items, customers[i]->getListOfRentals()[j]);
+                if (itemBorrow == NULL) {
+                    cout << "The items that " << customers[i]->getID() << " customer borrowed is not exist in Item list" << endl;
+                    customers.erase(customers.begin() + i);
+                    break;
+                }
+                else {
+                    bool checkExist = true;
+                    for (int z = 0; z < itemsBorrow.size(); z++) {
+                        if (itemBorrow->getID() == itemsBorrow[z]) {
+                            itemsBorrow[z + 1] = to_string(atoi(itemsBorrow[z + 1].c_str()) + 1);
+                            checkExist = false;
+                            break;
+                        }
+                    }
+                    if (checkExist) {
+                        itemsBorrow.push_back(itemBorrow->getID()); // add to the list
+                        itemsBorrow.push_back("1"); // add to the list
+                    }
+                }
 
-Validation::Validation(ifstream& filein, ifstream& fileinCustomer) {
+            }
 
+        }
+
+    }
+    // update the new number of copy for items
+    for (int b = 0; b < items.size(); b++) {
+        for (int a = 0; a < itemsBorrow.size(); a++) {
+            if (items[b]->getID() == itemsBorrow[a]) {
+                if (items[b]->getNumOfCopy() < atoi(itemsBorrow[a + 1].c_str())) {
+                    items[b]->setNumOfCopy(atoi(itemsBorrow[a + 1].c_str()));
+                    break;
+                }
+            }
+        }
+    }
+    itemsBorrow.clear();
 }
-Validation::Validation(){
+Validation::Validation(ifstream& filein, ifstream& fileinCustomer) {
 
 }
 Validation::~Validation() {

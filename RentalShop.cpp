@@ -102,7 +102,7 @@ vector<string> RentalShop::CusIDS(){
     }
     return result;
 }
-
+//end new
 bool RentalShop::returnItem(string input, string item, int typeSearch) {
     int size = this->customers.size();
     string checkCus, checkItem;
@@ -153,6 +153,7 @@ bool RentalShop::returnItem(string input, string item, int typeSearch) {
     else if (typeSearch == 1) { cout << "Your custormer name input does not existing in the database" << endl; }
     return false;
 }
+
 Customer* RentalShop::promoteCusID(string input, int type, int typeSearch) {
     int size = this->customers.size();
     string check;
@@ -165,9 +166,19 @@ Customer* RentalShop::promoteCusID(string input, int type, int typeSearch) {
         }
         if (check == input) {
             if (type == 0 && this->customers[i]->getcustomerType() == "Guest") {
-                cout << "Successfully promote " << this->customers[i]->getName() << " to Regular member\n" << endl;
-                this->customers[i]->setcustomerType("Regular");
-                return this->customers[i];
+                if (this->customers[i]->getBorrowedDVD() < 3) {
+                    cout << "This member is not eligible to promote to Regular\n" << endl;
+                    cout << "This member need to rent and return successfully " << 3 - this->customers[i]->getBorrowedDVD() <<" DVD items left!\n" << endl;
+                    return this->customers[i];
+                }
+                else if (this->customers[i]->getBorrowedDVD() >= 3) {
+                    cout << "Successfully promote " << this->customers[i]->getName() << " to Regular member\n" << endl;
+                    this->customers[i]->setcustomerType("Regular");
+                    RegularAccount* newRegular = new RegularAccount(this->customers[i]);
+                    customers.push_back(newRegular);
+                    this->customers.erase(this->customers.begin() + i);
+                    return newRegular;
+                }
             }
             else if (type == 0 && this->customers[i]->getcustomerType() == "Regular") {
                 cout << "This is already Regular member\n" << endl;
@@ -178,9 +189,19 @@ Customer* RentalShop::promoteCusID(string input, int type, int typeSearch) {
                 return this->customers[i];
             }
             if (type == 1 && this->customers[i]->getcustomerType() == "Regular") {
-                cout << "Successfully promote " << this->customers[i]->getName() << " to VIP member\n" << endl;
-                this->customers[i]->setcustomerType("VIP");
-                return this->customers[i];
+                if (this->customers[i]->getBorrowedDVD() < 3) {
+                    cout << "This member is not eligible to promote to VIP\n" << endl;
+                    cout << "This member need to rent and return successfully " << 3 - this->customers[i]->getBorrowedDVD() << " DVD items left" << endl;
+                    return this->customers[i];
+                }
+                else {
+                    cout << "Successfully promote " << this->customers[i]->getName() << " to VIP member\n" << endl;
+                    this->customers[i]->setcustomerType("VIP");
+                    VipAccount* newVip = new VipAccount(this->customers[i]);
+                    this->customers.push_back(newVip);
+                    this->customers.erase(this->customers.begin() + i);
+                    return newVip;
+                }
             }
             else if (type == 1 && this->customers[i]->getcustomerType() == "VIP") {
                 cout << "This is already VIP member\n" << endl;
@@ -195,6 +216,7 @@ Customer* RentalShop::promoteCusID(string input, int type, int typeSearch) {
     cout << "Your input does not existing in the database\n" << endl;
     return NULL;
 }
+
 
 /*delete pointer vector*/
 void RentalShop::deletePointerVector() {

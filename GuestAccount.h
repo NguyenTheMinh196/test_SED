@@ -12,3 +12,4 @@ public:
     ~GuestAccount();
     string toString();
 };
+

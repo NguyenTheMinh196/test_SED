@@ -26,6 +26,7 @@ private:
 	static void readOneItemInItemFile(ifstream& filein, Item* item, string& genre, vector<string>& IDs);
 	static int checkTypeItem(Item* item);
 	static void readOneCustomerInCustomerFile(ifstream& filein, Customer* customer, vector<string>& CUSs);
+    static Item* searchItemID(vector<Item*> items, string ID);
 
 public:
     // ITEM FILE
@@ -42,6 +43,7 @@ public:
     static void readFileCustomer(ifstream& filein, vector<Customer*>& customers);
 	static void readFileItem(ifstream& filein, vector<Item*>& items);
     static bool validateLine(string line);
+    void checkCustomerAndItems(vector<Item*>& items, vector<Customer*>& customers);
 
     Validation(ifstream& filein, ifstream& fileinCustomer);
     Validation();

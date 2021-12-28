@@ -105,3 +105,4 @@ string Customer::toString() {
            "\nList of Rental: " +
            listRental +  '\n';
 }
+
